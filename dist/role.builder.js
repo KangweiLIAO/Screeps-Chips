@@ -2,10 +2,20 @@
 const roleCreep = require('role.creep');
 
 class roleBuilder extends roleCreep {
-    /** @param {Creep} creep **/
+    /** 
+     * @constructor constructor for harvester creep
+     * @param {Creep} creep creep ref from Game.creeps[]
+     **/
     constructor(creep) {
         super();
         this.creep = creep;
+    }
+
+    /**
+     * @description basic running rules for builder
+     */
+    run() {
+
     }
 
 	buildFlagged(targets) {

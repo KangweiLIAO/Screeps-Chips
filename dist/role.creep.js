@@ -36,7 +36,8 @@ roleCreep.prototype.moveTo_ = function(creep, pos_to, reusePath=5, maxRooms=1, s
  * @param {Creep} creep creep instance
  * @param {roleCreep} secondTask default value is undefined creep instance
  */
-roleCreep.prototype.build = function(creep, source_num, secondTask=undefined) {
+roleCreep.prototype.build = function(source_num, secondTask=undefined) {
+    const creep = this.creep;
     if (creep.memory.renew != 'true') {
         if(creep.memory.building && creep.store.getUsedCapacity() == 0) {
             // if don't have energy, quit building state:
@@ -78,7 +79,8 @@ roleCreep.prototype.build = function(creep, source_num, secondTask=undefined) {
  * @param {number} renew_threshold renew threshold
  * @param {number} renew_to renew to a value
  */
-roleCreep.prototype.renew = function(creep, renew_threshold, renew_to=renew_threshold+700) {
+roleCreep.prototype.renew = function(renew_threshold, renew_to=renew_threshold+600) {
+    const creep = this.creep;
     const spawns = creep.room.find(FIND_MY_SPAWNS);
     var energy_store = creep.room.energyAvailable;
     if((creep.memory.renew == 'false') && (creep.ticksToLive < renew_threshold)) {

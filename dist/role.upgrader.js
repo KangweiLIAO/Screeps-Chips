@@ -1,9 +1,15 @@
-// TODO: create comments and restructure
+// TODO: create comments
 const roleCreep = require('role.creep');
 
 class roleUpgrader extends roleCreep {
     /** @param {Creep} creep **/
-    run(creep) {
+    constructor(creep) {
+        super();
+        this.creep = creep;
+    }
+
+    run() {
+        const creep = this.creep;
         if (creep.memory.renew != 'true') {
             if(creep.memory.upgrading && creep.store[RESOURCE_ENERGY] == 0) {
                 creep.memory.upgrading = false;

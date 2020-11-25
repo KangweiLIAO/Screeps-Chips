@@ -2,6 +2,10 @@
 const roleBuilder = require('./role.builder');
 
 class roleMaintainer extends roleBuilder {
+    /** 
+     * @description maintain operation
+     * @param {number} maintain_threshold threshold for maintaining targets [0,1] (default = 0.9)
+     **/
     maintain(maintain_threshold=0.9) {
         const creep = this.creep;
         if (creep.memory.renew != 'true') {

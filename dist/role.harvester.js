@@ -17,6 +17,9 @@ class roleHarvester extends roleCreep {
         this.creep = creep;
     }
 
+    /**
+     * @description basic running rules for harvester
+     */
     run() {
         const creep = this.creep;
         if (creep.memory.renew != 'true') {
@@ -33,6 +36,7 @@ class roleHarvester extends roleCreep {
                 // if in harvesting state, do:
                 var sources = creep.room.find(FIND_SOURCES);
                 if(creep.harvest(sources[0]) == ERR_NOT_IN_RANGE) {
+                    // TODO: use custom moveTo method
                     creep.moveTo(sources[0], {visualizePathStyle: {stroke: '#ffaa00'}, reusePath: 0});
                 }
             } else {
@@ -51,6 +55,7 @@ class roleHarvester extends roleCreep {
                 if(targets.length) {
                     // if target exist, move to target and transfer energy
                     if(creep.transfer(targets[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                        // TODO: use custom moveTo method
                         creep.moveTo(targets[0], {visualizePathStyle: {stroke: '#ffffff'},reusePath: 0});
                     }
                 }
