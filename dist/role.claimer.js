@@ -15,7 +15,10 @@ class roleClamier extends roleCreep {
      * @description basic running rules for claimer
      */
     run() {
+        const creep = this.creep;
+        if (creep.memory.renew != 'true') {
 
+        }
     }
 }
 

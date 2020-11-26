@@ -25,18 +25,19 @@ roleCreep.prototype.run = function() {
  * @param {number} reusePath reuse path
  * @param {roleCreep} secondTask default value is undefined creep instance
  */
-roleCreep.prototype.moveTo_ = function(creep, pos_to, reusePath=5, maxRooms=1, strokeColor=undefined,lineStyle='dashed') {
-    var path = creep.room.findPath(creep.pos,pos_to,
-        {visualizePathStyle: {stroke: strokeColor, lineStyle:lineStyle}, maxRooms:maxRooms, reusePath:reusePath});
+roleCreep.prototype.moveTo_ = function(pos_to, maxRooms=1, reusePath=5, visual) {
+    const creep = this.creep;
+    var path = creep.room.findPath(creep.pos, pos_to, {maxRooms:maxRooms, reusePath:reusePath});
     creep.moveByPath(path);
 }
 
 /**
  * @description Find and build structures
- * @param {Creep} creep creep instance
+ * @param {RoomPosition} target 
+ * @param {number} source
  * @param {roleCreep} secondTask default value is undefined creep instance
  */
-roleCreep.prototype.build = function(source_num, secondTask=undefined) {
+roleCreep.prototype.build = function(target=undefined, source) {
     const creep = this.creep;
     if (creep.memory.renew != 'true') {
         if(creep.memory.building && creep.store.getUsedCapacity() == 0) {
@@ -51,24 +52,30 @@ roleCreep.prototype.build = function(source_num, secondTask=undefined) {
         if(!creep.memory.building) {
             // if not in building mode, harvest sources:
             var sources = creep.room.find(FIND_SOURCES);
-            if(creep.harvest(sources[source_num]) == ERR_NOT_IN_RANGE) {
-                this.moveTo_(creep, sources[source_num].pos, strokeColor='#ffffff');
+            if(creep.harvest(sources[source]) == ERR_NOT_IN_RANGE) {
+                this.moveTo_(sources[source].pos);
             }
         } else {
-            // if in building mode, find construction site and build:
-            var targets = creep.room.find(FIND_MY_CONSTRUCTION_SITES);
-            // sort targets from [low progressTotal to high progressTotal]:
-            targets.sort((a, b) => (a.progressTotal < b.progressTotal) ? 
-                -1 : ((a.progressTotal > b.progressTotal) ? 1 : 0));
-            if(targets.length) {
-                // if targets exist, go and build:
-                if(creep.build(targets[0]) == ERR_NOT_IN_RANGE) {
-                    // var path = creep.room.findPath(creep.pos,targets[0].pos,
-                    //     {visualizePathStyle: {stroke: '#ffffff'}, maxRooms:1});
-                    // creep.moveByPath(path);
-                    this.moveTo_(creep, targets[0].pos, strokeColor='#ffffff');
+            if (target != undefined) {
+                if(creep.build(target) == ERR_NOT_IN_RANGE) {
+                    this.moveTo_(target.pos);
                 }
-            } else {if (secondTask != undefined) secondTask.run(creep);}
+            } else {
+                // if in building mode, find construction site and build:
+                var targets = creep.room.find(FIND_MY_CONSTRUCTION_SITES);
+                // sort targets from [low progressTotal to high progressTotal]:
+                targets.sort((a, b) => (a.progressTotal < b.progressTotal) ? 
+                    -1 : ((a.progressTotal > b.progressTotal) ? 1 : 0));
+                if(targets.length) {
+                    // if targets exist, go and build:
+                    if(creep.build(targets[0]) == ERR_NOT_IN_RANGE) {
+                        // var path = creep.room.findPath(creep.pos,targets[0].pos,
+                        //     {visualizePathStyle: {stroke: '#ffffff'}, maxRooms:1});
+                        // creep.moveByPath(path);
+                        this.moveTo_(targets[0].pos);
+                    }
+                }
+            }
         }
     }
 }
@@ -80,10 +87,13 @@ roleCreep.prototype.build = function(source_num, secondTask=undefined) {
  * @param {number} renew_to renew to a value
  */
 roleCreep.prototype.renew = function(renew_threshold, renew_to=renew_threshold+600) {
+    // constants:
     const creep = this.creep;
     const spawns = creep.room.find(FIND_MY_SPAWNS);
+    // variable:
     var energy_store = creep.room.energyAvailable;
     if((creep.memory.renew == 'false') && (creep.ticksToLive < renew_threshold)) {
+        console.log(creep.name + " Renew");
         creep.say(String.fromCodePoint(0x1F354)+"Renew");
         creep.memory.renew = 'true';
     }
@@ -104,7 +114,9 @@ roleCreep.prototype.renew = function(renew_threshold, renew_to=renew_threshold+6
                 creep.memory.renew = 'false';
             }
         }
-    } else if(creep.memory.renew == '') {creep.memory.renew == 'false';}
+    }
+    // if is a new creep:
+    if(creep.memory.renew == undefined) {creep.memory.renew = 'false';}
 }
 
 module.exports = roleCreep;

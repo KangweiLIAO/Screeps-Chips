@@ -28,6 +28,9 @@ class roleUpgrader extends roleCreep {
                 if(creep.name == 'Upgrader1'){
                     creep.moveTo(new RoomPosition(8,11,'W38N5'));
                 }
+                if(creep.name == 'Upgrader2'){
+                    creep.moveTo(new RoomPosition(10,11,'W38N5'));
+                }
             }
             else {
                 var sources = creep.room.find(FIND_SOURCES);

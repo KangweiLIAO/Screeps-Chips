@@ -19,7 +19,14 @@ class structTower extends structStructure{
                 }
             });
             targets.sort((a, b) => (a.hits < b.hits) ? -1 : ((a.hits > b.hits) ? 1 : 0));
-            this.tower.repair(targets[0])
+            if (targets[0].structureType != STRUCTURE_WALL) {
+                this.tower.repair(targets[0]);
+            } else {
+                if(targets[0].hits < 250000) {
+                    // Only repair walls with < 250K
+                    this.tower.repair(targets[0]);
+                }
+            }
         }
     }
 }

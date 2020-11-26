@@ -18,8 +18,9 @@ module.exports.loop = function () {
     
     // Creeps' operations:
     for(var name in Game.creeps) {
-        var creep = Game.creeps[name];
-        if (creep.ticksToLive < 300) console.log(creep.name+" needs renew.");
+        // constants
+        const creep = Game.creeps[name];
+
         if(creep.memory.role == 'attacker') {
             attacker_num++;
             const creep_inst = new roleAttacker(creep);
@@ -29,12 +30,13 @@ module.exports.loop = function () {
             builder_num++;
             const creep_inst = new roleBuilder(creep);
             creep_inst.renew(300);
-            creep_inst.build(1);
+            creep_inst.run();
         }
         else if(creep.memory.role == 'claimer') {
             claimer_num++;
             const creep_inst = new roleClaimer();
             creep_inst.renew(300);
+            creep_inst.run();
         }
         else if(creep.memory.role == 'harvester') {
             harvester_num++;
@@ -69,8 +71,8 @@ module.exports.loop = function () {
             // constants:
             const spawn = Game.spawns[struct.name];
 
-            // creeps' body parts:
             /**
+             * Creeps' body parts:
              * [MOVE,WORK,CARRY,ATTACK,RANGED_ATTACK,HEAL,CLAIM,TOUGH] 
              * = [50, 100, 50, 80, 150, 250, 600, 10]
              */ 

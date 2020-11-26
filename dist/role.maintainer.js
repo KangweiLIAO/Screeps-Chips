@@ -2,6 +2,9 @@
 const roleBuilder = require('./role.builder');
 
 class roleMaintainer extends roleBuilder {
+    run() {
+        
+    }
     /** 
      * @description maintain operation
      * @param {number} maintain_threshold threshold for maintaining targets [0,1] (default = 0.9)
@@ -18,8 +21,8 @@ class roleMaintainer extends roleBuilder {
             }
             if(!creep.memory.repairing) {
                 var sources = creep.room.find(FIND_SOURCES);
-                if(creep.harvest(sources[1]) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(sources[1], {reusePath: 10}, {visualizePathStyle: {stroke: '#ffaa00'}});
+                if(creep.harvest(sources[0]) == ERR_NOT_IN_RANGE) {
+                    creep.moveTo(sources[0], {reusePath: 10}, {visualizePathStyle: {stroke: '#ffaa00'}});
                 }
             } else {
                 var targets = creep.room.find(FIND_STRUCTURES, {
@@ -29,6 +32,7 @@ class roleMaintainer extends roleBuilder {
                         return (structure.structureType==STRUCTURE_ROAD) && (structure.hits <= structure.hitsMax*maintain_threshold);
                     }
                 });
+                //
                 targets.sort((a, b) => (a.hits < b.hits) ? -1 : ((a.hits > b.hits) ? 1 : 0));
                 if(targets.length) {
                     // console.log(targets.length);
