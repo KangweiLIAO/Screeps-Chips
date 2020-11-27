@@ -8,7 +8,9 @@ const roleMaintainer = require('role.maintainer');
 const structTower = require('struct.tower');
 
 // notifications:
-Memory.notification = {noCreep:false};
+Memory.notification = {creepExtinct:false};
+Memory.creep_insts = {};
+Memory.towers = {};
 
 // Main function
 module.exports.loop = function () {
@@ -21,9 +23,18 @@ module.exports.loop = function () {
     var maintainer_num = 0
 
     // Notifications:
-    if(Memory.notification.noCreep == true){
-        Game.notify("No creep alive!");
-        Memory.notification.noCreep = false;
+    if(Memory.notification.creepExtinct == true){
+        var time = new Date();
+        Game.notify(`No creep is alive (Report on ${time.getMonth()+1}-${time.getDate()}: 
+            ${time.getHours()-5}:${time.getMinutes()})`);
+        Memory.notification.creepExtinct = false;
+    }
+
+    // Manual functions:
+    const updateCreeps = false;
+    if (updateCreeps) {
+        updateOldCreep('W38N5','harvester',
+            ['work','work','work','work','carry','carry','move','move']);
     }
 
     // Creeps' operations:
@@ -35,7 +46,8 @@ module.exports.loop = function () {
         if(creep.memory.role == 'attacker') {
             attacker_num++;
             const creep_inst = new roleAttacker(creep);
-            creep_inst.toRoom(new RoomPosition(16,35,'W39N5'));
+            creep_inst.renew(300);
+            creep_inst.run();
         }
         else if(creep.memory.role == 'builder') {
             builder_num++;
@@ -65,21 +77,34 @@ module.exports.loop = function () {
             maintainer_num++;
             const creep_inst = new roleMaintainer(creep);
             creep_inst.renew(300);
-            creep_inst.maintain()
+            creep_inst.run();
         } else {
             console.log("(Creep) No such role.");
         }
-        if (total_creeps == 0) Memory.notification.noCreep = true;
+        if (total_creeps == 0) Memory.notification.creepExtinct = true;
     }
 
     // Structures' operations:
     for(var id in Game.structures) {
         var struct = Game.structures[id];
+        var tower_num = 0;
+
         if (struct.structureType == STRUCTURE_TOWER) {
+            tower_num++;
+            // var tower_name = `Tower${tower_num}`;
+            // if(Memory.towers[tower_name] == undefined) {
+            //     console.log(`Tower${tower_num} added`);
+            //     Memory.towers[tower_name] = {inst:(new structTower(struct)),cooldown:100};
+                
+            // } else {
+            //     console.log(tower_name+" exist");
+            //     console.log(Memory.towers[tower_name]);
+            //     console.log(Memory.towers[tower_name].cooldown);
+            //     const inst = Memory.towers[tower_name].inst
+            //     inst.run();
+            // }
             const struct_inst = new structTower(struct);
-            if (struct_inst.attack() == 0) {
-                struct_inst.repair();
-            }
+            struct_inst.run();
         }
         if (struct.structureType == STRUCTURE_SPAWN) {
             // constants:
@@ -90,20 +115,20 @@ module.exports.loop = function () {
              * = [50, 100, 50, 80, 150, 250, 600, 10]
              * Game.spawns['Spawn1'].spawnCreep(worker_parts),"Harvester0",{memory:{role:'harvester'}});
              */ 
-            const attacker_parts = [ATTACK,ATTACK,ATTACK,TOUGH,MOVE,MOVE];
+            const attacker_parts = [ATTACK,ATTACK,RANGED_ATTACK,HEAL,MOVE,MOVE];
             const claimer_parts = [CLAIM,MOVE];
-            const upgrader_parts = [WORK,WORK,WORK,CARRY,MOVE,MOVE];
-            const worker_parts = [WORK,WORK,WORK,CARRY,CARRY,MOVE,MOVE];
+            const upgrader_parts = [WORK,WORK,WORK,CARRY,CARRY,MOVE,MOVE];
+            const worker_parts = [WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE];
 
             const attacker_parts_cost = 350;
             const claimer_parts_cost = 650;
-            const upgrader_parts_cost = 450;
-            const worker_parts_cost = 500;
+            const upgrader_parts_cost = 550;
+            const worker_parts_cost = 700;
             
-            const attacker_max = 0;
+            const attacker_max = 1;
             const builder_max = 2;
             const claimer_max = 0;
-            const harvester_max = 4;
+            const harvester_max = 3;
             const upgrader_max = 2;
             const maintainer_max = 2;
 
@@ -158,27 +183,144 @@ function autoRespawn(spawn, prefix, control_num, creep_parts) {
     console.log("Spawn new "+prefix.toLowerCase());
     for (var i=0; i<=control_num; i++) {
         if(Game.creeps[prefix+i] == null) {
-            var code = spawn.spawnCreep(creep_parts, prefix+(i), {memory:{renew:false, role:prefix.toLowerCase()}})
+            var code = spawn.spawnCreep(creep_parts, prefix+(i), {memory:{renew:'false', role:prefix.toLowerCase()}})
             if (code != ERR_BUSY && code != OK){
-                Game.notify("autoRespawn() Error: Please check the function immediately (code:"+code+").");
+                Game.notify(`autoRespawn() Error: Please check the function immediately (code:${code}).`);
             }
         }
     }
 }
 
 /**
- * @param {Creep} creep The old creep needs to be replaced
- * @param {number[]} new_parts Current number of this type of creeps
+ * @param {string} room The room name for the update applies
+ * @param {string} creep_role The role for the creeps needed to be updated
+ * @param {string[]} new_parts new body parts
  */
-function autoUpdate(creep, new_parts) {
-    
+function updateOldCreep(room, creep_role, new_parts=[]) {
+    for(var name in Game.creeps) {
+        const creep = Game.creeps[name];
+        if ((new_parts != []) && (creep.room.name == room) && (creep.memory.role == creep_role)) {
+            var body = [];
+            creep.body.filter((obj) => {body.push(obj.type)});
+            // console.log(body[0] == new_parts[0]);
+            if (!body.equals(new_parts)) {
+                console.log(`Apply new parts: [${new_parts}] to current ${creep.name}.`);
+                console.log(`${creep.name} old`);
+            }
+        }
+    }
 }
 
 /**
- * @description Send important notifications automatically
+ * @description Generates a list of body parts to spawn a creep with by following a
+ *              regex-like pattern to decide which parts to try spawning and fitting in as
+ *              many parts as possible for the given amount of energy.
+ *              Pattern examples:
+ *
+ *              'mah'        1 MOVE, 1 ATTACK, and 1 HEAL part
+ *              'mw4a'       1 MOVE part, 4 WORK parts, and 1 ATTACK part
+ *              'm*'         As many MOVE parts as will fit
+ *              'w*m*t*'     As many WORK parts as will fit, then as many MOVE parts as
+ *                           will fit, then as many TOUGH parts as will fit
+ *              'm[wc]*'     1 MOVE part, then alternate between WORK and CARRY parts
+ *                           until one doesn't fit
+ *              '[mw3]*'     1 MOVE part for every 3 WORK parts, until one doesn't fit
+ *              'm3[arh]*t*' 3 MOVE parts, then cycle between ATTACK, RANGED_ATTACK,
+ *                           and HEAL until one doesn't fit, then as many TOUGH
+ *                           parts as will fit
+ *              '[m[wc]2]*'  Cycle between MOVE, WORK, CARRY, WORK, CARRY until one
+ *                           doesn't fit
  */
-function autoNotify() {
-    if (Game.creeps) {
-
+function generateCreepBody(pattern, energy) {
+    const PARTS = {
+        'c': CARRY,
+        'w': WORK,
+        'm': MOVE,
+        'a': ATTACK,
+        'r': RANGED_ATTACK,
+        'h': HEAL,
+        'l': CLAIM,
+        't': TOUGH
+    };
+    let result = [];
+    let stack = [];
+    let i = 0;
+    let repeat = 0;
+    let depleted = false;
+    while (i < pattern.length && energy > 0 && result.length < 50) {
+        const c = pattern[i];
+        if (c == '*' || (c >= '0' && c <= '9')) {
+            const top = stack.pop();
+            if (!top) {
+                break;
+            }
+            let count = 0;
+            while (i < pattern.length && pattern[i] >= '0' && pattern[i] <= '9') {
+                count = count * 10 + (pattern[i] - '0');
+                i++;
+            }
+            if (c == '*') {
+                count = 999;
+                i++;
+            }
+            if (!depleted && top[1] < count - 1) {
+                i = top[0];
+                repeat = top[1] + 1;
+            } else {
+                repeat = 0;
+                if (stack.length == 0) {
+                    depleted = false;
+                }
+            }
+            stack.push(top);
+            continue;
+        }
+        stack.pop();
+        if (c == '[') {
+            stack.push([i, repeat]);
+            stack.push(null);
+        }
+        if (c in PARTS) {
+            if (!depleted) {
+                const cost = BODYPART_COST[PARTS[c]];
+                if (energy >= cost) {
+                    result.push(PARTS[c]);
+                    energy -= cost;
+                } else {
+                    depleted = true;
+                }
+            }
+            stack.push([i, repeat]);
+        }
+        repeat = 0;
+        i++;
     }
+    return result;
 }
+
+
+// attach the .equals method to Array's prototype to call it on any array
+Array.prototype.equals = function (array) {
+    // if the other array is a falsy value, return
+    if (!array)
+        return false;
+    // compare lengths - can save a lot of time 
+    if (this.length != array.length)
+        return false;
+
+    for (var i = 0, l=this.length; i < l; i++) {
+        // Check if we have nested arrays
+        if (this[i] instanceof Array && array[i] instanceof Array) {
+            // recurse into the nested arrays
+            if (!this[i].equals(array[i]))
+                return false;       
+        }           
+        else if (this[i] != array[i]) { 
+            // Warning - two different object instances will never be equal: {x:20} != {x:20}
+            return false;   
+        }           
+    }       
+    return true;
+}
+// Hide method from for-in loops
+Object.defineProperty(Array.prototype, "equals", {enumerable: false});

@@ -1,15 +1,16 @@
 // TODO: create comments
+const roleCreep = require('./role.creep');
 const roleBuilder = require('./role.builder');
 
 class roleMaintainer extends roleBuilder {
     run() {
-        
+        this.maintain();
     }
     /** 
      * @description maintain operation
-     * @param {number} maintain_threshold threshold for maintaining targets [0,1] (default = 0.9)
+     * @param {number} threshold threshold for maintaining targets [0,1] (default = 0.9)
      **/
-    maintain(maintain_threshold=0.9) {
+    maintain(threshold=0.8) {
         const creep = this.creep;
         if (creep.memory.renew != 'true') {
             if(creep.memory.repairing && creep.store[RESOURCE_ENERGY] == 0) {
@@ -25,18 +26,21 @@ class roleMaintainer extends roleBuilder {
                     creep.moveTo(sources[0], {reusePath:10, visualizePathStyle: {stroke: '#ffaa00'}});
                 }
             } else {
+                // constants:
+                const prefer_targets = [STRUCTURE_ROAD,STRUCTURE_CONTAINER];
+
                 var targets = creep.room.find(FIND_STRUCTURES, {
                     filter: (structure) => {
-                        // if current structure
-                        // console.log(structure.structureType);
-                        return (structure.structureType!=STRUCTURE_WALL) && (structure.hits <= structure.hitsMax*maintain_threshold);
+                        return (prefer_targets.includes(structure.structureType)) 
+                            && (structure.hits <= structure.hitsMax*threshold);
                     }
                 });
                 // sort targets by the percentage of hits [low percent to high percent]
-                targets.sort((a, b) => (a.hitsMax/a.hits > b.hitsMax/b.hits) ? 
-                    -1 : ((a.hitsMax/a.hits < b.hitsMax/b.hits) ? 1 : 0));
+                targets.sort((a, b) => (a.hits/a.hitsMax < b.hits/b.hitsMax) ? 
+                    -1 : ((a.hits/a.hitsMax > b.hits/b.hitsMax) ? 1 : 0));
                 if(targets.length) {
                     if(creep.repair(targets[0]) == ERR_NOT_IN_RANGE) {
+                        // console.log(`Move to -> ${targets[0].pos}`)
                         creep.moveTo(targets[0], {reusePath: 0}, {visualizePathStyle: {stroke: '#377b4b'}});
                     }
                 } else {

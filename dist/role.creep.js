@@ -32,6 +32,18 @@ roleCreep.prototype.moveTo_ = function(pos_to, maxRooms=1, reusePath=5, visual) 
 }
 
 /**
+ * @description Find and harvest sources
+ * @param {number} target_source the index of specific source in Game.sources
+ */
+roleCreep.prototype.harvest = function(target_source=undefined) {
+    const creep = this.creep;
+    var sources = creep.room.find(FIND_SOURCES);
+    if(creep.harvest(sources[source]) == ERR_NOT_IN_RANGE) {
+        this.moveTo_(sources[source].pos);
+    }
+}
+
+/**
  * @description Find and build structures
  * @param {RoomPosition} target 
  * @param {number} source
@@ -83,25 +95,27 @@ roleCreep.prototype.build = function(target=undefined, source) {
 /**
  * @description Creep automatic renew when live reaching renew threshold
  * @param {Creep} creep creep instance
- * @param {number} renew_threshold renew threshold
- * @param {number} renew_to renew to a value
+ * @param {number} threshold renew threshold
+ * @param {number} limit renew to a value
  */
-roleCreep.prototype.renew = function(renew_threshold, renew_to=renew_threshold+600) {
+roleCreep.prototype.renew = function(threshold=300, limit=threshold+600) {
     // constants:
     const creep = this.creep;
     const spawns = creep.room.find(FIND_MY_SPAWNS);
     // variable:
-    var energy_store = creep.room.energyAvailable;
+    var energy_store = creep.room.energyAvailable;  // available energy in current room
+    var status = creep.memory.renew;                // string type
 
-    if((creep.memory.renew == 'false') && (creep.ticksToLive < renew_threshold)) {
+    if((status == 'false') && (creep.ticksToLive < threshold)) {
         console.log(creep.name + " Renew");
         creep.say(String.fromCodePoint(0x1F354)+"Renew");
         creep.memory.renew = 'true';
-    }
-    if(creep.memory.renew == 'waiting' && energy_store > 50) {
+        status = 'true'
+    } else if(status == 'waiting' && energy_store > 50) {
         creep.memory.renew = 'true';
+        status = 'true'
     }
-    if(creep.memory.renew == 'true') {
+    if(status == 'true') {
         if(energy_store <= 50) {
             creep.say(String.fromCodePoint(0x1F643)+"Waiting");
             creep.memory.renew = 'waiting';
@@ -110,14 +124,12 @@ roleCreep.prototype.renew = function(renew_threshold, renew_to=renew_threshold+6
                 || creep.transfer(spawns[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(spawns[0]);
             }
-            if(creep.ticksToLive > renew_to) {
+            if(creep.ticksToLive > limit) {
                 creep.say(String.fromCodePoint(0x1F606)+"Full");
                 creep.memory.renew = 'false';
             }
         }
     }
-    // if this is a new creep:
-    if(creep.memory.renew == undefined) {creep.memory.renew = 'false';}
 }
 
 module.exports = roleCreep;
