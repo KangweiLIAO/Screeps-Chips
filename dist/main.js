@@ -7,18 +7,29 @@ const roleUpgrader = require('role.upgrader');
 const roleMaintainer = require('role.maintainer');
 const structTower = require('struct.tower');
 
+// notifications:
+Memory.notification = {noCreep:false};
+
 // Main function
 module.exports.loop = function () {
+    var total_creeps = 0
     var harvester_num = 0
     var upgrader_num = 0
     var builder_num = 0
     var claimer_num = 0
     var attacker_num = 0
     var maintainer_num = 0
-    
+
+    // Notifications:
+    if(Memory.notification.noCreep == true){
+        Game.notify("No creep alive!");
+        Memory.notification.noCreep = false;
+    }
+
     // Creeps' operations:
     for(var name in Game.creeps) {
         // constants
+        total_creeps++;
         const creep = Game.creeps[name];
 
         if(creep.memory.role == 'attacker') {
@@ -58,6 +69,7 @@ module.exports.loop = function () {
         } else {
             console.log("(Creep) No such role.");
         }
+        if (total_creeps == 0) Memory.notification.noCreep = true;
     }
 
     // Structures' operations:
@@ -65,39 +77,41 @@ module.exports.loop = function () {
         var struct = Game.structures[id];
         if (struct.structureType == STRUCTURE_TOWER) {
             const struct_inst = new structTower(struct);
-            struct_inst.repair();
+            if (struct_inst.attack() == 0) {
+                struct_inst.repair();
+            }
         }
         if (struct.structureType == STRUCTURE_SPAWN) {
             // constants:
             const spawn = Game.spawns[struct.name];
-
             /**
              * Creeps' body parts:
              * [MOVE,WORK,CARRY,ATTACK,RANGED_ATTACK,HEAL,CLAIM,TOUGH] 
              * = [50, 100, 50, 80, 150, 250, 600, 10]
+             * Game.spawns['Spawn1'].spawnCreep(worker_parts),"Harvester0",{memory:{role:'harvester'}});
              */ 
             const attacker_parts = [ATTACK,ATTACK,ATTACK,TOUGH,MOVE,MOVE];
             const claimer_parts = [CLAIM,MOVE];
-            const upgrader_parts = [WORK,WORK,CARRY,CARRY,CARRY,MOVE];
-            const worker_parts = [WORK,WORK,WORK,CARRY,CARRY,CARRY,MOVE];
+            const upgrader_parts = [WORK,WORK,WORK,CARRY,MOVE,MOVE];
+            const worker_parts = [WORK,WORK,WORK,CARRY,CARRY,MOVE,MOVE];
 
             const attacker_parts_cost = 350;
             const claimer_parts_cost = 650;
-            const upgrader_parts_cost = 400;
+            const upgrader_parts_cost = 450;
             const worker_parts_cost = 500;
             
             const attacker_max = 0;
-            const builder_max = 3;
+            const builder_max = 2;
             const claimer_max = 0;
             const harvester_max = 4;
-            const upgrader_max = 3;
+            const upgrader_max = 2;
             const maintainer_max = 2;
 
             // Action for Spawn1 in room 'W38N5'
             if(struct.name == 'Spawn1') {
                 // variables:
                 var available_energy = spawn.room.energyAvailable;
-                
+
                 if((attacker_num < attacker_max)&&(available_energy >= attacker_parts_cost)) {
                     // If number of attacker < desired number
                     autoRespawn(spawn,"Attacker",attacker_num,attacker_parts);
@@ -144,9 +158,10 @@ function autoRespawn(spawn, prefix, control_num, creep_parts) {
     console.log("Spawn new "+prefix.toLowerCase());
     for (var i=0; i<=control_num; i++) {
         if(Game.creeps[prefix+i] == null) {
-            var err = spawn.spawnCreep(creep_parts, prefix+(i), {memory:{role:prefix.toLowerCase()}});
-            if (err != 0) throw Error("Auto Re-spawn Error (error code = " + err + ")")
-            break;
+            var code = spawn.spawnCreep(creep_parts, prefix+(i), {memory:{renew:false, role:prefix.toLowerCase()}})
+            if (code != ERR_BUSY && code != OK){
+                Game.notify("autoRespawn() Error: Please check the function immediately (code:"+code+").");
+            }
         }
     }
 }
@@ -157,4 +172,13 @@ function autoRespawn(spawn, prefix, control_num, creep_parts) {
  */
 function autoUpdate(creep, new_parts) {
     
+}
+
+/**
+ * @description Send important notifications automatically
+ */
+function autoNotify() {
+    if (Game.creeps) {
+
+    }
 }

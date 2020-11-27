@@ -34,3 +34,5 @@ Game.spawns[0].spawnCreep([CLAIM,MOVE],"Claimer0")
 Game.rooms[0].spawns[0].spawnCreep([CLAIM,MOVE],"Claimer0")
 Game.rooms["W38N5"].spawns["Spawn1"].spawnCreep([CLAIM,MOVE],"Claimer0")
 Game.spawns["Spawn1"].spawnCreep([CLAIM,MOVE],"Claimer0")
+Game.spawns['Spawn1'].spawnCreep([WORK,CARRY,MOVE]),"Harvester0",{memory:{role:'harvester'}});
+Game.spawns['Spawn1'].spawnCreep([WORK,CARRY,MOVE],"Harvester0",{memory:{role:'harvester'}});

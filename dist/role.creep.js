@@ -22,8 +22,8 @@ roleCreep.prototype.run = function() {
  * @description A greater movement
  * @param {RoomPosition} pos_from start position
  * @param {RoomPosition} pos_to end position
- * @param {number} reusePath reuse path
- * @param {roleCreep} secondTask default value is undefined creep instance
+ * @param {number} maxRooms the room limit for searching a path
+ * @param {roleCreep} reusePath reserve how many path in memory
  */
 roleCreep.prototype.moveTo_ = function(pos_to, maxRooms=1, reusePath=5, visual) {
     const creep = this.creep;
@@ -116,9 +116,8 @@ roleCreep.prototype.renew = function(renew_threshold, renew_to=renew_threshold+6
             }
         }
     }
-    // if is a new creep:
+    // if this is a new creep:
     if(creep.memory.renew == undefined) {creep.memory.renew = 'false';}
-    
 }
 
 module.exports = roleCreep;

@@ -37,7 +37,7 @@ class roleHarvester extends roleCreep {
                 var sources = creep.room.find(FIND_SOURCES);
                 if(creep.harvest(sources[0]) == ERR_NOT_IN_RANGE) {
                     // TODO: use custom moveTo method
-                    creep.moveTo(sources[0], {visualizePathStyle: {stroke: '#ffaa00'}, reusePath: 0});
+                    creep.moveTo(sources[0], {visualizePathStyle: {stroke: '#ffaa00'}, reusePath: 10});
                 }
             } else {
                 // if not in harvesting state, transfer energy to indicated structure:
@@ -56,7 +56,7 @@ class roleHarvester extends roleCreep {
                     // if target exist, move to target and transfer energy
                     if(creep.transfer(targets[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                         // TODO: use custom moveTo method
-                        creep.moveTo(targets[0], {visualizePathStyle: {stroke: '#ffffff'},reusePath: 0});
+                        creep.moveTo(targets[0], {visualizePathStyle: {stroke: '#ffffff'},reusePath: 10});
                     }
                 } else {
                     this.build(undefined,0);
