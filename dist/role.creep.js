@@ -92,6 +92,7 @@ roleCreep.prototype.renew = function(renew_threshold, renew_to=renew_threshold+6
     const spawns = creep.room.find(FIND_MY_SPAWNS);
     // variable:
     var energy_store = creep.room.energyAvailable;
+
     if((creep.memory.renew == 'false') && (creep.ticksToLive < renew_threshold)) {
         console.log(creep.name + " Renew");
         creep.say(String.fromCodePoint(0x1F354)+"Renew");
@@ -117,6 +118,7 @@ roleCreep.prototype.renew = function(renew_threshold, renew_to=renew_threshold+6
     }
     // if is a new creep:
     if(creep.memory.renew == undefined) {creep.memory.renew = 'false';}
+    
 }
 
 module.exports = roleCreep;

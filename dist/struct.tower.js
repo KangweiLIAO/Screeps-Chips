@@ -22,7 +22,7 @@ class structTower extends structStructure{
             if (targets[0].structureType != STRUCTURE_WALL) {
                 this.tower.repair(targets[0]);
             } else {
-                if(targets[0].hits < 250000) {
+                if(targets[0].hits < 300000) {
                     // Only repair walls with < 250K
                     this.tower.repair(targets[0]);
                 }

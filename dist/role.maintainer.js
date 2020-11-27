@@ -22,26 +22,25 @@ class roleMaintainer extends roleBuilder {
             if(!creep.memory.repairing) {
                 var sources = creep.room.find(FIND_SOURCES);
                 if(creep.harvest(sources[0]) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(sources[0], {reusePath: 10}, {visualizePathStyle: {stroke: '#ffaa00'}});
+                    creep.moveTo(sources[0], {reusePath:10, visualizePathStyle: {stroke: '#ffaa00'}});
                 }
             } else {
                 var targets = creep.room.find(FIND_STRUCTURES, {
                     filter: (structure) => {
                         // if current structure
                         // console.log(structure.structureType);
-                        return (structure.structureType==STRUCTURE_ROAD) && (structure.hits <= structure.hitsMax*maintain_threshold);
+                        return (structure.structureType!=STRUCTURE_WALL) && (structure.hits <= structure.hitsMax*maintain_threshold);
                     }
                 });
-                //
-                targets.sort((a, b) => (a.hits < b.hits) ? -1 : ((a.hits > b.hits) ? 1 : 0));
+                // sort targets by the percentage of hits [low percent to high percent]
+                targets.sort((a, b) => (a.hitsMax/a.hits > b.hitsMax/b.hits) ? 
+                    -1 : ((a.hitsMax/a.hits < b.hitsMax/b.hits) ? 1 : 0));
                 if(targets.length) {
-                    // console.log(targets.length);
-                    // console.log('Moving -> ', targets[0].pos);
                     if(creep.repair(targets[0]) == ERR_NOT_IN_RANGE) {
                         creep.moveTo(targets[0], {reusePath: 0}, {visualizePathStyle: {stroke: '#377b4b'}});
                     }
                 } else {
-                    creep.moveTo(new RoomPosition(12,22,'W38N5'));
+                    this.build(undefined,0);
                 }
             }
         }

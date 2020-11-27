@@ -58,6 +58,8 @@ class roleHarvester extends roleCreep {
                         // TODO: use custom moveTo method
                         creep.moveTo(targets[0], {visualizePathStyle: {stroke: '#ffffff'},reusePath: 0});
                     }
+                } else {
+                    this.build(undefined,0);
                 }
             }
         }

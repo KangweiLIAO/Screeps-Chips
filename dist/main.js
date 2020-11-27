@@ -34,8 +34,8 @@ module.exports.loop = function () {
         }
         else if(creep.memory.role == 'claimer') {
             claimer_num++;
-            const creep_inst = new roleClaimer();
-            creep_inst.renew(300);
+            const creep_inst = new roleClaimer(creep);
+            creep_inst.renew(400,2000);
             creep_inst.run();
         }
         else if(creep.memory.role == 'harvester') {

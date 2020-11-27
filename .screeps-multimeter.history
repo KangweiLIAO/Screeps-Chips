@@ -30,3 +30,7 @@ console.log(Game.rooms['W38N5'].find(STRUCTURE_SPAWNS)[0].store[RESOURCE_ENERGY]
 console.log(Game.rooms['W38N5'].find(STRUCTURE_MY_SPAWNS)[0].store[RESOURCE_ENERGY])
 console.log(Game.rooms['W38N5'].find(FIND_MY_SPAWNS)[0].store[RESOURCE_ENERGY])
 console.log(Game.rooms['W38N5'].find(FIND_MY_SPAWNS)[0].store[RESOURCE_ENERGY])
+Game.spawns[0].spawnCreep([CLAIM,MOVE],"Claimer0")
+Game.rooms[0].spawns[0].spawnCreep([CLAIM,MOVE],"Claimer0")
+Game.rooms["W38N5"].spawns["Spawn1"].spawnCreep([CLAIM,MOVE],"Claimer0")
+Game.spawns["Spawn1"].spawnCreep([CLAIM,MOVE],"Claimer0")

@@ -17,7 +17,9 @@ class roleClamier extends roleCreep {
     run() {
         const creep = this.creep;
         if (creep.memory.renew != 'true') {
-
+            if(creep.reserveController(creep.room.controller) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(creep.room.controller);
+            }
         }
     }
 }
