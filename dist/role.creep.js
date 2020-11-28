@@ -38,57 +38,8 @@ roleCreep.prototype.moveTo_ = function(pos_to, maxRooms=1, reusePath=5, visual) 
 roleCreep.prototype.harvest = function(target_source=undefined) {
     const creep = this.creep;
     var sources = creep.room.find(FIND_SOURCES);
-    if(creep.harvest(sources[source]) == ERR_NOT_IN_RANGE) {
-        this.moveTo_(sources[source].pos);
-    }
-}
-
-/**
- * @description Find and build structures
- * @param {RoomPosition} target 
- * @param {number} source
- * @param {roleCreep} secondTask default value is undefined creep instance
- */
-roleCreep.prototype.build = function(target=undefined, source) {
-    const creep = this.creep;
-    if (creep.memory.renew != 'true') {
-        if(creep.memory.building && creep.store.getUsedCapacity() == 0) {
-            // if don't have energy, quit building state:
-            creep.memory.building = false;
-        }
-        if(!creep.memory.building && creep.store.getFreeCapacity() == 0) {
-            // if have full energy, enter building state:
-            creep.memory.building = true;
-            creep.say('🚧 Build');
-        }
-        if(!creep.memory.building) {
-            // if not in building mode, harvest sources:
-            var sources = creep.room.find(FIND_SOURCES);
-            if(creep.harvest(sources[source]) == ERR_NOT_IN_RANGE) {
-                this.moveTo_(sources[source].pos);
-            }
-        } else {
-            if (target != undefined) {
-                if(creep.build(target) == ERR_NOT_IN_RANGE) {
-                    this.moveTo_(target.pos);
-                }
-            } else {
-                // if in building mode, find construction site and build:
-                var targets = creep.room.find(FIND_MY_CONSTRUCTION_SITES);
-                // sort targets from [low progressTotal to high progressTotal]:
-                targets.sort((a, b) => (a.progressTotal < b.progressTotal) ? 
-                    -1 : ((a.progressTotal > b.progressTotal) ? 1 : 0));
-                if(targets.length) {
-                    // if targets exist, go and build:
-                    if(creep.build(targets[0]) == ERR_NOT_IN_RANGE) {
-                        // var path = creep.room.findPath(creep.pos,targets[0].pos,
-                        //     {visualizePathStyle: {stroke: '#ffffff'}, maxRooms:1});
-                        // creep.moveByPath(path);
-                        this.moveTo_(targets[0].pos);
-                    }
-                }
-            }
-        }
+    if(creep.harvest(sources[target_source]) == ERR_NOT_IN_RANGE) {
+        this.moveTo_(sources[target_source].pos);
     }
 }
 

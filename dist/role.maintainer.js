@@ -1,8 +1,16 @@
 // TODO: create comments
 const roleCreep = require('./role.creep');
-const roleBuilder = require('./role.builder');
 
-class roleMaintainer extends roleBuilder {
+class roleMaintainer extends roleCreep {
+    /** 
+     * @constructor constructor for maintainer creep
+     * @param {Creep} creep creep ref from Game.creeps[]
+     **/
+    constructor(creep) {
+        super();
+        this.creep = creep;
+    }
+
     run() {
         this.maintain();
     }
@@ -10,8 +18,7 @@ class roleMaintainer extends roleBuilder {
      * @description maintain operation
      * @param {number} threshold threshold for maintaining targets [0,1] (default = 0.9)
      **/
-    maintain(threshold=0.8) {
-        const creep = this.creep;
+    maintain(creep=this.creep, threshold=0.8) {
         if (creep.memory.renew != 'true') {
             if(creep.memory.repairing && creep.store[RESOURCE_ENERGY] == 0) {
                 creep.memory.repairing = false;
@@ -43,9 +50,10 @@ class roleMaintainer extends roleBuilder {
                         // console.log(`Move to -> ${targets[0].pos}`)
                         creep.moveTo(targets[0], {reusePath: 0}, {visualizePathStyle: {stroke: '#377b4b'}});
                     }
-                } else {
-                    this.build(undefined,0);
-                }
+                } 
+                // else {
+                //     this.build(undefined,0);
+                // }
             }
         }
     }

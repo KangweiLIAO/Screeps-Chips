@@ -127,7 +127,7 @@ module.exports.loop = function () {
             const builder_max = 2;
             const claimer_max = 0;
             const harvester_max = 3;
-            const upgrader_max = 2;
+            const upgrader_max = 3;
             const maintainer_max = 2;
 
             // Action for Spawn1 in room 'W38N5'

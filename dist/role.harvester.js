@@ -59,7 +59,8 @@ class roleHarvester extends roleCreep {
                         creep.moveTo(targets[0], {visualizePathStyle: {stroke: '#ffffff'},reusePath: 10});
                     }
                 } else {
-                    this.build(undefined,0);
+                    // if no construction sites exist
+                    new roleMaintainer(creep).maintain(this.creep);
                 }
             }
         }
