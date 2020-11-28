@@ -9,7 +9,6 @@ const structTower = require('struct.tower');
 
 // notifications:
 Memory.notification = {creepExtinct:false};
-Memory.creep_insts = {};
 Memory.towers = {};
 
 // Main function
@@ -79,7 +78,7 @@ module.exports.loop = function () {
             creep_inst.renew(300);
             creep_inst.run();
         } else {
-            console.log("(Creep) No such role.");
+            console.log(`(${creep.name}) No such role.`);
         }
         if (total_creeps == 0) Memory.notification.creepExtinct = true;
     }
@@ -91,11 +90,10 @@ module.exports.loop = function () {
 
         if (struct.structureType == STRUCTURE_TOWER) {
             tower_num++;
-            // var tower_name = `Tower${tower_num}`;
+            var tower_name = `Tower${tower_num}`;
             // if(Memory.towers[tower_name] == undefined) {
             //     console.log(`Tower${tower_num} added`);
-            //     Memory.towers[tower_name] = {inst:(new structTower(struct)),cooldown:100};
-                
+            //     Memory.towers[tower_name] = {inst:(new structTower(struct)),cooldown:100,cooling:false};
             // } else {
             //     console.log(tower_name+" exist");
             //     console.log(Memory.towers[tower_name]);
@@ -106,7 +104,7 @@ module.exports.loop = function () {
             const struct_inst = new structTower(struct);
             struct_inst.run();
         }
-        if (struct.structureType == STRUCTURE_SPAWN) {
+        else if (struct.structureType == STRUCTURE_SPAWN) {
             // constants:
             const spawn = Game.spawns[struct.name];
             /**
@@ -115,15 +113,15 @@ module.exports.loop = function () {
              * = [50, 100, 50, 80, 150, 250, 600, 10]
              * Game.spawns['Spawn1'].spawnCreep(worker_parts),"Harvester0",{memory:{role:'harvester'}});
              */ 
-            const attacker_parts = [ATTACK,ATTACK,RANGED_ATTACK,HEAL,MOVE,MOVE];
-            const claimer_parts = [CLAIM,MOVE];
-            const upgrader_parts = [WORK,WORK,WORK,CARRY,CARRY,MOVE,MOVE];
-            const worker_parts = [WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE];
+            const attacker_parts = [ATTACK,ATTACK,ATTACK,ATTACK,HEAL,HEAL,MOVE,MOVE,MOVE];
+            const claimer_parts = [CLAIM,ATTACK,MOVE,MOVE];
+            const upgrader_parts = [WORK,WORK,WORK,WORK,CARRY,CARRY,MOVE,MOVE,MOVE];
+            const worker_parts = [WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE];
 
-            const attacker_parts_cost = 350;
-            const claimer_parts_cost = 650;
-            const upgrader_parts_cost = 550;
-            const worker_parts_cost = 700;
+            const attacker_parts_cost = 970;
+            const claimer_parts_cost = 780;
+            const upgrader_parts_cost = 650;
+            const worker_parts_cost = 900;
             
             const attacker_max = 1;
             const builder_max = 2;
@@ -139,32 +137,32 @@ module.exports.loop = function () {
 
                 if((attacker_num < attacker_max)&&(available_energy >= attacker_parts_cost)) {
                     // If number of attacker < desired number
-                    autoRespawn(spawn,"Attacker",attacker_num,attacker_parts);
+                    autoRespawn(spawn,"Attacker",attacker_parts);
                     available_energy -= attacker_parts_cost;
                 }
                 if((builder_num < builder_max)&&(available_energy >= worker_parts_cost)) {
                     // If number of builder < desired number
-                    autoRespawn(spawn,"Builder",builder_num,worker_parts);
+                    autoRespawn(spawn,"Builder",worker_parts);
                     available_energy -= worker_parts_cost;
                 }
                 if((claimer_num < claimer_max)&&(available_energy >= claimer_parts_cost)) {
                     // If number of builder < desired number
-                    autoRespawn(spawn,"Claimer",claimer_num,claimer_parts);
+                    autoRespawn(spawn,"Claimer",claimer_parts);
                     available_energy -= claimer_parts_cost;
                 }
                 if((harvester_num < harvester_max)&&(available_energy >= worker_parts_cost)) {
                     // If number of harvester < desired number
-                    autoRespawn(spawn,"Harvester",harvester_num,worker_parts);
+                    autoRespawn(spawn,"Harvester",worker_parts);
                     available_energy -= worker_parts_cost;
                 }
                 if((maintainer_num < maintainer_max)&&(available_energy >= upgrader_parts_cost)) {
                     // If number of maintainer < desired number
-                    autoRespawn(spawn,"Maintainer",maintainer_num,upgrader_parts);
+                    autoRespawn(spawn,"Maintainer",upgrader_parts);
                     available_energy -= upgrader_parts_cost;
                 }
                 if((upgrader_num < upgrader_max)&&(available_energy >= upgrader_parts_cost)) {
                     // If number of upgrader < desired number
-                    autoRespawn(spawn,"Upgrader",upgrader_num,upgrader_parts);
+                    autoRespawn(spawn,"Upgrader",upgrader_parts);
                     available_energy -= upgrader_parts_cost;
                 }
             }
@@ -175,41 +173,34 @@ module.exports.loop = function () {
 /**
  * @description Spawn the specific creep by given spawn point
  * @param {StructureSpawn} spawn The spawn point
- * @param {string} prefix Creep's prefix
- * @param {number} control_num Current number of this type of creeps
+ * @param {string} prefix creep's prefix
  * @param {number[]} creep_parts body parts for this type of creeps
+ * @param {string} update_role the role that needed to be update (e.g. 'harvester')
+ * @param {number[]} new_parts new body parts for type of creeps which needed to be updated
  */
-function autoRespawn(spawn, prefix, control_num, creep_parts) {
-    console.log("Spawn new "+prefix.toLowerCase());
-    for (var i=0; i<=control_num; i++) {
-        if(Game.creeps[prefix+i] == null) {
-            var code = spawn.spawnCreep(creep_parts, prefix+(i), {memory:{renew:'false', role:prefix.toLowerCase()}})
-            if (code != ERR_BUSY && code != OK){
-                Game.notify(`autoRespawn() Error: Please check the function immediately (code:${code}).`);
+
+function autoRespawn(spawn, prefix, creep_parts, update_role=undefined, new_parts=undefined) {
+    var code = 1;
+    var postfix = 0;
+    while (code == 1 || code == ERR_NAME_EXISTS || code == ERR_BUSY){
+        code = spawn.spawnCreep(creep_parts, prefix+(postfix), {memory:{renew:'false', role:prefix.toLowerCase()}});
+        if (code == OK) console.log(`(${spawn.name}) New ${prefix} is spawning...`)
+        postfix++;
+    }
+    if (prefix.toLowerCase() == update_role && new_parts != undefined) {
+        for(var name in Game.creeps) {
+            const creep = Game.creeps[name];
+            var body = creep.body.filter((obj) => {return obj.type});
+            if (!body.equals(new_parts)) {
+                console.log(`Apply new parts: [${new_parts}] to current ${creep.name}.`);
+                console.log(`${creep.name} old`);
+                // (spawn.spawnCreep(creep_parts, prefix+(postfix), 
+                //     {memory:{renew:'false', role:prefix.toLowerCase()}}) == ERR_NAME_EXISTS)
             }
         }
     }
 }
 
-/**
- * @param {string} room The room name for the update applies
- * @param {string} creep_role The role for the creeps needed to be updated
- * @param {string[]} new_parts new body parts
- */
-function updateOldCreep(room, creep_role, new_parts=[]) {
-    for(var name in Game.creeps) {
-        const creep = Game.creeps[name];
-        if ((new_parts != []) && (creep.room.name == room) && (creep.memory.role == creep_role)) {
-            var body = [];
-            creep.body.filter((obj) => {body.push(obj.type)});
-            // console.log(body[0] == new_parts[0]);
-            if (!body.equals(new_parts)) {
-                console.log(`Apply new parts: [${new_parts}] to current ${creep.name}.`);
-                console.log(`${creep.name} old`);
-            }
-        }
-    }
-}
 
 /**
  * @description Generates a list of body parts to spawn a creep with by following a

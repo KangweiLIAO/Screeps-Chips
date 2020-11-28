@@ -3,17 +3,27 @@ const structStructure = require("./struct.structure");
 
 class structTower extends structStructure{
     /** @param {StructureTower} tower **/
-    constructor(tower) {
+    constructor(tower,cooldown=500) {
         super();
         this.tower = tower;
-        this.cooldown = 500;
+        this.cooldownMax = cooldown;
+        this.cooldown = cooldown;
+        this.state = 'ready';
         // Memory.towers.cooldown = 0;
     }
 
     run() {
-        const tower = this.tower;
-        if (tower.attack() == 0) {
-            tower.repair();
+        if (this.state == 'cooling') {
+            
+        }
+        if (this.state == 'ready') {
+            if (this.attack() == 0) {
+                this.repair();
+            }
+            if (this.cooldown <= 0) {
+                this.state = 'cooling'
+            }
+            this.cooldown--;
         }
     }
 
