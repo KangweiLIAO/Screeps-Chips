@@ -23,13 +23,10 @@ class roleUpgrader extends roleCreep {
                     creep.moveTo(creep.room.controller, {reusePath: 10}, {visualizePathStyle: {stroke: '#ffffff'}});
                 }
                 if(creep.name == 'Upgrader0'){
-                    creep.moveTo(new RoomPosition(7,11,'W38N5'));
+                    creep.moveTo(new RoomPosition(12,11,'W38N5'));
                 }
                 if(creep.name == 'Upgrader1'){
-                    creep.moveTo(new RoomPosition(8,11,'W38N5'));
-                }
-                if(creep.name == 'Upgrader2'){
-                    creep.moveTo(new RoomPosition(10,11,'W38N5'));
+                    creep.moveTo(new RoomPosition(12,14,'W38N5'));
                 }
             }
             else {
